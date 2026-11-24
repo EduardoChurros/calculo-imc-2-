@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadora de IMC</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-1: #0f172a;
+      --bg-2: #1e1b4b;
+      --accent: #8b5cf6;
+      --accent-2: #06b6d4;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --card: rgba(255, 255, 255, 0.07);
+      --border: rgba(255, 255, 255, 0.14);
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      color: var(--text);
+      background: linear-gradient(135deg, var(--bg-1), var(--bg-2));
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Círculos decorativos de fundo */
+    body::before,
+    body::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.45;
+      z-index: 0;
+    }
+    body::before {
+      width: 380px;
+      height: 380px;
+      background: var(--accent);
+      top: -100px;
+      left: -100px;
+    }
+    body::after {
+      width: 340px;
+      height: 340px;
+      background: var(--accent-2);
+      bottom: -100px;
+      right: -80px;
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 440px;
+      padding: 36px 32px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+      animation: entrada 0.6s ease;
+    }
+
+    @keyframes entrada {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      font-size: 1.9rem;
+      text-align: center;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitulo {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin: 6px 0 28px;
+    }
+
+    .campo {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+      letter-spacing: 0.03em;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 1rem;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input::placeholder {
+      color: #64748b;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.25);
+    }
+
+    /* Remove setinhas do input number */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    .botoes {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    button {
+      flex: 1;
+      padding: 14px;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.2s, background 0.2s;
+    }
+
+    .btn-calcular {
+      color: #fff;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+    }
+
+    .btn-calcular:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(139, 92, 246, 0.55);
+    }
+
+    .btn-limpar {
+      flex: 0 0 auto;
+      padding: 14px 20px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+    }
+
+    .btn-limpar:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: var(--text);
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    .erro {
+      margin-top: 14px;
+      min-height: 20px;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #fca5a5;
+    }
+
+    /* Resultado */
+    .resultado {
+      margin-top: 18px;
+      padding: 24px 20px;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.22);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      display: none;
+      animation: entrada 0.5s ease;
+    }
+
+    .resultado.visivel {
+      display: block;
+    }
+
+    .imc-valor {
+      font-size: 3.4rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .imc-categoria {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 6px 16px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 999px;
+      color: #0f172a;
+    }
+
+    .imc-dica {
+      margin-top: 14px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* Barra indicadora */
+    .barra {
+      position: relative;
+      height: 12px;
+      margin: 26px 0 8px;
+      border-radius: 999px;
+      background: linear-gradient(
+        90deg,
+        #38bdf8 0%,
+        #22c55e 25%,
+        #facc15 50%,
+        #fb923c 70%,
+        #ef4444 100%
+      );
+    }
+
+    .marcador {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 20px;
+      height: 20px;
+      background: #fff;
+      border: 4px solid var(--bg-1);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+      transition: left 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .escala {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .rodape {
+      margin-top: 22px;
+      text-align: center;
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    @media (max-width: 480px) {
+      .card { padding: 28px 20px; }
+      h1 { font-size: 1.6rem; }
+      .imc-valor { font-size: 2.8rem; }
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Calculadora de IMC</h1>
+    <p class="subtitulo">Descubra seu Índice de Massa Corporal</p>
+
+    <form id="form" novalidate>
+      <div class="campo">
+        <label for="peso">Peso (kg)</label>
+        <input type="number" id="peso" placeholder="Ex.: 70" step="0.1" min="1" />
+      </div>
+
+      <div class="campo">
+        <label for="altura">Altura (cm)</label>
+        <input type="number" id="altura" placeholder="Ex.: 175" step="1" min="1" />
+      </div>
+
+      <div class="botoes">
+        <button type="submit" class="btn-calcular">Calcular</button>
+        <button type="button" class="btn-limpar" id="limpar">Limpar</button>
+      </div>
+
+      <p class="erro" id="erro"></p>
+    </form>
+
+    <section class="resultado" id="resultado">
+      <div class="imc-valor" id="valor">0,0</div>
+      <span class="imc-categoria" id="categoria">—</span>
+
+      <div class="barra">
+        <div class="marcador" id="marcador"></div>
+      </div>
+      <div class="escala">
+        <span>15</span>
+        <span>18,5</span>
+        <span>25</span>
+        <span>30</span>
+        <span>40</span>
+      </div>
+
+      <p class="imc-dica" id="dica"></p>
+    </section>
+
+    <p class="rodape">Classificação segundo a OMS. Não substitui avaliação médica.</p>
+  </main>
+
+  <script>
+    const form = document.getElementById("form");
+    const pesoEl = document.getElementById("peso");
+    const alturaEl = document.getElementById("altura");
+    const erroEl = document.getElementById("erro");
+    const resultadoEl = document.getElementById("resultado");
+    const valorEl = document.getElementById("valor");
+    const categoriaEl = document.getElementById("categoria");
+    const marcadorEl = document.getElementById("marcador");
+    const dicaEl = document.getElementById("dica");
+    const limparBtn = document.getElementById("limpar");
+
+    const faixas = [
+      { max: 18.5, nome: "Abaixo do peso", cor: "#38bdf8", dica: "Seu IMC está abaixo do ideal. Considere conversar com um profissional de saúde ou nutricionista." },
+      { max: 25,   nome: "Peso normal",    cor: "#22c55e", dica: "Parabéns! Seu IMC está na faixa considerada saudável. Continue com bons hábitos." },
+      { max: 30,   nome: "Sobrepeso",      cor: "#facc15", dica: "Seu IMC indica sobrepeso. Alimentação equilibrada e atividade física ajudam." },
+      { max: 35,   nome: "Obesidade I",    cor: "#fb923c", dica: "Vale buscar orientação médica para montar um plano de acompanhamento." },
+      { max: 40,   nome: "Obesidade II",   cor: "#f87171", dica: "Recomenda-se acompanhamento com profissionais de saúde." },
+      { max: Infinity, nome: "Obesidade III", cor: "#ef4444", dica: "Procure orientação médica o quanto antes para um acompanhamento adequado." }
+    ];
+
+    function classificar(imc) {
+      return faixas.find(f => imc < f.max);
+    }
+
+    // Converte o IMC (15 a 40) em porcentagem na barra
+    function posicaoBarra(imc) {
+      const min = 15, max = 40;
+      const pct = ((imc - min) / (max - min)) * 100;
+      return Math.min(100, Math.max(0, pct));
+    }
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      erroEl.textContent = "";
+
+      const peso = parseFloat(pesoEl.value);
+      const alturaCm = parseFloat(alturaEl.value);
+
+      if (!peso || !alturaCm || peso <= 0 || alturaCm <= 0) {
+        erroEl.textContent = "Preencha peso e altura com valores válidos.";
+        resultadoEl.classList.remove("visivel");
+        return;
+      }
+
+      if (alturaCm < 50 || alturaCm > 260) {
+        erroEl.textContent = "Informe a altura em centímetros (ex.: 175).";
+        resultadoEl.classList.remove("visivel");
+        return;
+      }
+
+      const alturaM = alturaCm / 100;
+      const imc = peso / (alturaM * alturaM);
+      const faixa = classificar(imc);
+
+      valorEl.textContent = imc.toFixed(1).replace(".", ",");
+      valorEl.style.color = faixa.cor;
+      categoriaEl.textContent = faixa.nome;
+      categoriaEl.style.background = faixa.cor;
+      dicaEl.textContent = faixa.dica;
+
+      resultadoEl.classList.add("visivel");
+
+      // Reinicia a animação do marcador
+      marcadorEl.style.left = "0%";
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          marcadorEl.style.left = posicaoBarra(imc) + "%";
+        });
+      });
+    });
+
+    limparBtn.addEventListener("click", () => {
+      form.reset();
+      erroEl.textContent = "";
+      resultadoEl.classList.remove("visivel");
+      pesoEl.focus();
+    });
+  </script>
+</body>
+</html>
